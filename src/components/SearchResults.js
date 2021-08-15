@@ -1,8 +1,6 @@
 import React from 'react'
 
 const SearchResults = ({results, handleClick}) => {
-  console.log('results: ', results)
-
   if (results.length === 0){
     return <div>No Results</div>
   }

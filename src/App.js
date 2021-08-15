@@ -3,11 +3,13 @@ import axios from 'axios'
 import Search from './components/Search'
 import SearchResults from './components/SearchResults'
 import CountryInfo from './components/CountryInfo'
+import WeatherInfo from './components/WeatherInfo'
 
 const App = () => {
   const [search, setSearch] = useState('')
   const [countries, setCountries] = useState([])
   const [viewedCountry, setViewedCountry] = useState(null)
+  const [weather, setWeather] = useState(null)
 
   // Updates the search state
   const handleSearch = (event) => {
@@ -15,7 +17,6 @@ const App = () => {
   }
 
   const handleClick = (event, country) => {
-    console.log(country.name)
     setViewedCountry(country)
   }
 
@@ -26,26 +27,35 @@ const App = () => {
     )
   }
 
-  // Get data from API
+  // Get country data from API
   useEffect(() => {
     axios
       .get('https://restcountries.eu/rest/v2/all/')
       .then(response => setCountries(response.data))
   }, [])
 
-  // For debugging
+  // Get weather data from API when a country is viewed
   useEffect(() => {
-    console.log('countries: ', countries)
-  }, [countries])
+    const apiKey = process.env.REACT_APP_API_KEY
+    if (viewedCountry != null) {
+      const getUrl = `https://api.openweathermap.org/data/2.5/weather?q=${viewedCountry.capital}&appid=${apiKey}`
+      axios
+        .get(getUrl)
+        .then(response => setWeather(response.data))
+    }
+  }, [viewedCountry])
 
   const display = () => {
-    if (viewedCountry === null) {
+    if (viewedCountry === null || weather === null) {
       return <SearchResults results={getSearchResults()} handleClick={handleClick} />
     } else {
       return (
         <div>
           <button onClick={() => setViewedCountry(null)}>back</button>
-          <CountryInfo country={viewedCountry} />
+          <h1>{viewedCountry.name}</h1>
+          <CountryInfo country={viewedCountry} weather={weather}/>
+          <h1>Weather in {viewedCountry.capital}</h1>
+          <WeatherInfo weather={weather} />
         </div>
       )
     }
